@@ -1,5 +1,12 @@
-# Interactive Divisional Maps Bangladesh
+## Interactive Divisional Maps Bangladesh
 
+Beautiful divisional maps widget.
+
+Helps to provide your website with division-related content of Bangladesh. It has a total of 8 clickable division areas on the map widget and custom links can be set for each divisions.
+
+# Plugin Information
+
+- **Link:** https://wordpress.org/plugins/interactive-divisional-maps-bangladesh/
 - **Contributors:** imran2w
 - **Developer link:** https://imran.link
 - **Tags:** Bangladesh, Maps
@@ -9,12 +16,6 @@
 - **Requires PHP:** 5.6
 - **License:** GPLv2 or later
 - **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
-
-Beautiful divisional maps widget.
-
-## Description
-
-Helps to provide your website with division-related content of Bangladesh. It has a total of 8 clickable division areas on the map widget and custom links can be set for each divisions.
 
 ## Usage
 
@@ -26,36 +27,6 @@ Helps to provide your website with division-related content of Bangladesh. It ha
 - Developer: [ALI IMRAN](https://facebook.com/imran2w)
 - E-Mail: imran4dev@gmail.com
 - Website: [imran.link](https://imran.link)
-
-## Changelog
-
-### 1.1
-
-- New shortcode: `[interactive_divitional_maps_bd]`
-
-### 1.0
-
-- Initial release.
-
-## Installation
-
-### Method 1
-
-1. Navigate to: Plugins -> Add new -> Search.
-2. Search for "Interactive Divisional Maps Bangladesh".
-3. Install and activate plugin.
-4. Done.
-
-### Method 2
-
-1. Download plugin (zip file).
-2. Upload and install.
-3. Activate plugin.
-4. Done.
-
-## Screenshots
-
-1. Interactive Divisional Maps Widget.
 
 ## License
 
