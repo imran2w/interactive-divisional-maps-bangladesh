@@ -14,15 +14,6 @@ The plugin lets you:
 # Plugin Information
 
 - **Link:** https://wordpress.org/plugins/interactive-divisional-maps-bangladesh/
-- **Contributors:** imran2w
-- **Developer link:** https://imran.link
-- **Tags:** Bangladesh, Maps
-- **Requires at least:** 4.0
-- **Tested up to:** 7.0
-- **Stable tag:** 1.1.1
-- **Requires PHP:** 5.6
-- **License:** GPLv2 or later
-- **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
 ## Usage
 
