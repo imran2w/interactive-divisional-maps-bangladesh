@@ -4,19 +4,27 @@ Developer link: https://imran.link
 Tags: Bangladesh, Maps
 Requires at least: 4.0
 Tested up to: 7.0
-Stable tag: 1.1.1
+Stable tag: 2.0.0
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Beautiful divisional maps widget.
+Interactive Bangladesh divisional map with clickable regions, shortcode support, and configurable colors.
 
-== Description == 
-Helps to provide your website with division-related content of Bangladesh. It has a total of 8 clickable division areas on the map widget and custom links can be set for each divisions.
+== Description ==
+Display an interactive map of Bangladesh with 8 clickable divisional regions.
+
+The plugin lets you:
+- Add the map using a widget or shortcode.
+- Set custom links for each division.
+- Configure division fill color, hover color, and river line color from the settings page.
+- Reuse one global configuration across all widget instances.
+
+This is useful for news portals, local directories, educational websites, and any site that needs region-based navigation for Bangladesh.
 
 = Usage =
 - Widget: 'Interactive Divisional Maps'
-- Shortcode: [interactive_divitional_maps_bd]
+- Shortcode: [interactive_divisional_maps_bd]
 
 = Credits =
 * Developer: [ALI IMRAN](https://facebook.com/imran2w)
@@ -26,8 +34,12 @@ Helps to provide your website with division-related content of Bangladesh. It ha
 
 == Changelog ==
 
+= 2.0.0 =
+* Added settings page.
+* Added options for map colors (division fill, hover fill, and river line color).
+
 = 1.1 =
-* New shortcode: [interactive_divitional_maps_bd]
+* New shortcode: [interactive_divisional_maps_bd]
 
 = 1.0 =
 * Initial release.

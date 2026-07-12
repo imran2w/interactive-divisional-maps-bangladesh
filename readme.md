@@ -1,8 +1,15 @@
 ## Interactive Divisional Maps Bangladesh
 
-Beautiful divisional maps widget.
+Interactive Bangladesh divisional map with clickable regions, shortcode support, and configurable colors.
 
-Helps to provide your website with division-related content of Bangladesh. It has a total of 8 clickable division areas on the map widget and custom links can be set for each divisions.
+Display an interactive map of Bangladesh with 8 clickable divisional regions.
+
+The plugin lets you:
+
+- Add the map using a widget or shortcode.
+- Set custom links for each division.
+- Configure division fill color, hover color, and river line color from the settings page.
+- Reuse one global configuration across all widget instances.
 
 # Plugin Information
 
@@ -20,7 +27,7 @@ Helps to provide your website with division-related content of Bangladesh. It ha
 ## Usage
 
 - Widget: `Interactive Divisional Maps`
-- Shortcode: `[interactive_divitional_maps_bd]`
+- Shortcode: `[interactive_divisional_maps_bd]`
 
 ## Credits
 

@@ -2,9 +2,9 @@
 /*
 Plugin Name: Interactive Divisional Maps Bangladesh
 Plugin URI: https://imran.link/
-Description: Interactive divisional maps widget.
+Description: Display an interactive map of Bangladesh with 8 clickable divisional regions.
 Author: ALI IMRAN
-Version: 1.1.1
+Version: 2.0.0
 Author URI: http://facebook.com/imran2w
 */
 
@@ -14,127 +14,113 @@ This program is free software; you can redistribute it and/or modify it under th
 
 // Bismillah...
 
-defined( 'ABSPATH' )or die( 'Stop! You can not do this!' );
+defined( 'ABSPATH' ) || die( 'Stop! You can not do this!' );
 
-wp_register_sidebar_widget('bd_divisional_maps', 'Interactive Divisional Maps', 'wgt_bd_divisional_maps', array('description' => __('Displays Interactive Divisional Maps of Bangladesh')));
-function wgt_bd_divisional_maps( $args ) {
-	extract( $args );
-	
-	$options = get_option( "bd_divisional_maps_options" );
-	if ( !is_array( $options ) ) {
-		$options = array(
-			'title' => 'বাংলাদেশের মানচিত্র'
+class Interactive_Divisional_Maps_BD {
+	const OPTION_NAME = 'bd_divisional_maps_options';
+
+	/**
+	 * Division option keys.
+	 *
+	 * @return array<int, string>
+	 */
+	public static function division_keys() {
+		return array( 'barisal', 'chittagong', 'dhaka', 'khulna', 'mymensingh', 'rajshahi', 'rangpur', 'sylhet' );
+	}
+
+	/**
+	 * Default plugin options.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function default_options() {
+		return array(
+			'title'      => 'বাংলাদেশের মানচিত্র',
+			'st1_color'  => '#787878',
+			'st3_color'  => '#367445',
+			'hover_color'=> '#9A1515',
+			'barisal'    => '#',
+			'chittagong' => '#',
+			'dhaka'      => '#',
+			'khulna'     => '#',
+			'mymensingh' => '#',
+			'rajshahi'   => '#',
+			'rangpur'    => '#',
+			'sylhet'     => '#',
 		);
 	}
-	
-	echo $before_widget;
-	echo $before_title . $options['title'] . $after_title;
-	echo render_interactive_divitional_maps_bd();
-	echo $after_widget;
+
+	/**
+	 * Get plugin options merged with defaults.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function get_options() {
+		$saved = get_option( self::OPTION_NAME, array() );
+		if ( ! is_array( $saved ) ) {
+			$saved = array();
+		}
+
+		return wp_parse_args( $saved, self::default_options() );
+	}
+
+	/**
+	 * Sanitize map options from raw input.
+	 *
+	 * @param array<string, mixed> $raw Raw input values.
+	 * @return array<string, string>
+	 */
+	public static function sanitize_options( $raw ) {
+		$current   = self::get_options();
+		$sanitized = array();
+
+		$sanitized['title'] = isset( $raw['title'] ) ? sanitize_text_field( wp_unslash( (string) $raw['title'] ) ) : $current['title'];
+		$st1_color = isset( $raw['st1_color'] ) ? sanitize_hex_color( wp_unslash( (string) $raw['st1_color'] ) ) : '';
+		$sanitized['st1_color'] = $st1_color ? $st1_color : $current['st1_color'];
+		$color = isset( $raw['st3_color'] ) ? sanitize_hex_color( wp_unslash( (string) $raw['st3_color'] ) ) : '';
+		$sanitized['st3_color'] = $color ? $color : $current['st3_color'];
+		$hover = isset( $raw['hover_color'] ) ? sanitize_hex_color( wp_unslash( (string) $raw['hover_color'] ) ) : '';
+		$sanitized['hover_color'] = $hover ? $hover : $current['hover_color'];
+
+		foreach ( self::division_keys() as $division ) {
+			$value = isset( $raw[ $division ] ) ? esc_url_raw( wp_unslash( (string) $raw[ $division ] ) ) : '';
+			$sanitized[ $division ] = '' !== $value ? $value : $current[ $division ];
+		}
+
+		return $sanitized;
+	}
+
+	public static function render_shortcode() {
+		$options = self::get_options();
+		wp_enqueue_script(
+			'interactive-divisional-maps-bd-map',
+			plugins_url( 'assets/js/map-image.js', __FILE__ ),
+			array(),
+			'2.0.0',
+			true
+		);
+
+		ob_start();
+		include plugin_dir_path( __FILE__ ) . 'map-image.php';
+		return ob_get_clean();
+	}
+
+	public static function register_widget() {
+		register_widget( 'Interactive_Divisional_Maps_BD_Widget' );
+	}
+
+
+	public static function init() {
+		add_shortcode( 'interactive_divitional_maps_bd', array( __CLASS__, 'render_shortcode' ) ); // backward compatibility
+		add_shortcode( 'interactive_divisional_maps_bd', array( __CLASS__, 'render_shortcode' ) );
+		add_action( 'widgets_init', array( __CLASS__, 'register_widget' ) );
+	}
 }
 
-add_shortcode('interactive_divitional_maps_bd', 'render_interactive_divitional_maps_bd');
-function render_interactive_divitional_maps_bd() {
-	
-	$options = get_option( "bd_divisional_maps_options" );
-	if ( !is_array( $options ) ) {
-		$options = array(
-			'barisal' => '#',
-			'chittagong' => '#',
-			'dhaka' => '#',
-			'khulna' => '#',
-			'mymensingh' => '#',
-			'rajshahi' => '#',
-			'rangpur' => '#',
-			'sylhet' => '#'
-		);
-	}
-	
-	ob_start(); // begin output buffering
-	include 'map-image.php';
-	$output = ob_get_contents(); // end output buffering
-	ob_end_clean(); // grab the buffer contents and empty the buffer
-	return $output;
+require_once plugin_dir_path( __FILE__ ) . 'widget.php';
+
+if ( is_admin() ) {
+	require_once plugin_dir_path( __FILE__ ) . 'settings.php';
 }
 
-wp_register_widget_control( 'bd_divisional_maps', 'Interactive Divisional Maps', 'wgt_bd_divisional_maps_control' );
-function wgt_bd_divisional_maps_control() {
-	$options = get_option( "bd_divisional_maps_options" );
-	if ( !is_array( $options ) ) {
-		$options = array(
-			'title' => 'বাংলাদেশের মানচিত্র',
-			'barisal' => '#',
-			'chittagong' => '#',
-			'dhaka' => '#',
-			'khulna' => '#',
-			'mymensingh' => '#',
-			'rajshahi' => '#',
-			'rangpur' => '#',
-			'sylhet' => '#'
-		);
-	}
-
-	if ( isset( $_POST[ 'widget_control_submit' ] ) ) {
-		$opt = array();
-		$opt[ 'title' ] = esc_attr( $_POST[ 'title' ] );
-		$opt[ 'barisal' ] = esc_url( $_POST[ 'barisal' ] );
-		$opt[ 'chittagong' ] = esc_url( $_POST[ 'chittagong' ] );
-		$opt[ 'dhaka' ] = esc_url( $_POST[ 'dhaka' ] );
-		$opt[ 'khulna' ] = esc_url( $_POST[ 'khulna' ] );
-		$opt[ 'mymensingh' ] = esc_url( $_POST[ 'mymensingh' ] );
-		$opt[ 'rajshahi' ] = esc_url( $_POST[ 'rajshahi' ] );
-		$opt[ 'rangpur' ] = esc_url( $_POST[ 'rangpur' ] );
-		$opt[ 'sylhet' ] = esc_url( $_POST[ 'sylhet' ] );
-		update_option( "bd_divisional_maps_options", $opt );
-	}
-	?>
-	<table width="100%">
-		<tr>
-			<td><label for="title">Widget Title:</label></td>
-			<td><input type="text" id="title" name="title" value="<?php echo $options['title'];?>"/></td>
-		</tr>
-		<tr>
-			<td colspan="2"><strong><u>Division Links</u></strong></td>
-		</tr>
-		<tr>
-			<td><label for="barisal">Barisal:</label></td>
-			<td><input type="text" id="barisal" name="barisal" value="<?php echo $options['barisal'];?>"/></td>
-		</tr>
-		<tr>
-			<td><label for="barisal">Chittagong:</label></td>
-			<td><input type="text" id="chittagong" name="chittagong" value="<?php echo $options['chittagong'];?>"/></td>
-		</tr>
-		<tr>
-			<td><label for="dhaka">Dhaka:</label></td>
-			<td><input type="text" id="dhaka" name="dhaka" value="<?php echo $options['dhaka'];?>"/></td>
-		</tr>
-		<tr>
-			<td><label for="khulna">Khulna:</label></td>
-			<td><input type="text" id="khulna" name="khulna" value="<?php echo $options['khulna'];?>"/></td>
-		</tr>
-		<tr>
-			<td><label for="mymensingh">Mymensingh:</label></td>
-			<td><input type="text" id="mymensingh" name="mymensingh" value="<?php echo $options['mymensingh'];?>"/></td>
-		</tr>
-		<tr>
-			<td><label for="rajshahi">Rajshahi:</label></td>
-			<td><input type="text" id="rajshahi" name="rajshahi" value="<?php echo $options['rajshahi'];?>"/></td>
-		</tr>
-		<tr>
-			<td><label for="rangpur">Rangpur:</label></td>
-			<td><input type="text" id="rangpur" name="rangpur" value="<?php echo $options['rangpur'];?>"/></td>
-		</tr>
-		<tr>
-			<td><label for="sylhet">Sylhet:</label></td>
-			<td><input type="text" id="sylhet" name="sylhet" value="<?php echo $options['sylhet'];?>"/></td>
-		</tr>
-	</table>
-	<input type="hidden" id="widget_control_submit" name="widget_control_submit" value="1"/>
-	<?php
-	}
-
-	add_action( 'admin_init', function () {
-		register_setting( 'options', 'bd_divisional_maps_options' );
-	} );
-
-	?>
+Interactive_Divisional_Maps_BD::init();
