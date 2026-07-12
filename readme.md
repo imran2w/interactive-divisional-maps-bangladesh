@@ -4,14 +4,14 @@ Interactive Bangladesh divisional map with clickable regions, shortcode support,
 
 Display an interactive map of Bangladesh with 8 clickable divisional regions.
 
-The plugin lets you:
+## The plugin lets you:
 
 - Add the map using a widget or shortcode.
 - Set custom links for each division.
 - Configure division fill color, hover color, and river line color from the settings page.
 - Reuse one global configuration across all widget instances.
 
-# Plugin Information
+## Plugin Information
 
 - **Link:** https://wordpress.org/plugins/interactive-divisional-maps-bangladesh/
 
