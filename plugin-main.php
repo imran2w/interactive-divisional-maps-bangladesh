@@ -18,6 +18,8 @@ defined( 'ABSPATH' ) || die( 'Stop! You can not do this!' );
 
 class Interactive_Divisional_Maps_BD {
 	const OPTION_NAME = 'bd_divisional_maps_options';
+	const MIGRATION_OPTION = 'bd_divisional_maps_widget_migrated_2_0_0';
+	const RECOVERY_OPTION = 'bd_divisional_maps_widget_recovered_2_0_0';
 
 	/**
 	 * Division option keys.
@@ -109,10 +111,150 @@ class Interactive_Divisional_Maps_BD {
 		register_widget( 'Interactive_Divisional_Maps_BD_Widget' );
 	}
 
+	/**
+	 * Migrate legacy single-widget sidebar IDs to WP_Widget multi-instance IDs.
+	 *
+	 * Older versions registered this widget with the deprecated single-widget API,
+	 * which stored sidebar entries as "bd_divisional_maps". Newer versions use
+	 * WP_Widget and expect entries like "bd_divisional_maps-2".
+	 *
+	 * @return void
+	 */
+	public static function maybe_migrate_legacy_widget() {
+		$sidebars_widgets = get_option( 'sidebars_widgets', array() );
+		if ( ! is_array( $sidebars_widgets ) ) {
+			return;
+		}
+
+		$found_legacy_widget = false;
+		foreach ( $sidebars_widgets as $sidebar_id => $widgets ) {
+			if ( ! is_array( $widgets ) ) {
+				continue;
+			}
+
+			if ( in_array( 'bd_divisional_maps', $widgets, true ) ) {
+				$found_legacy_widget = true;
+				break;
+			}
+		}
+
+		if ( ! $found_legacy_widget ) {
+			return;
+		}
+
+		$widget_instances = get_option( 'widget_bd_divisional_maps', array() );
+		if ( ! is_array( $widget_instances ) ) {
+			$widget_instances = array();
+		}
+
+		$next_index = 2;
+		$numeric_keys = array_filter( array_keys( $widget_instances ), 'is_int' );
+		if ( ! empty( $numeric_keys ) ) {
+			$next_index = max( $numeric_keys ) + 1;
+		}
+
+		$options = self::get_options();
+		$widget_instances[ $next_index ] = $options;
+		$widget_instances['_multiwidget'] = 1;
+		update_option( 'widget_bd_divisional_maps', $widget_instances );
+
+		$new_widget_id = 'bd_divisional_maps-' . $next_index;
+		foreach ( $sidebars_widgets as $sidebar_id => $widgets ) {
+			if ( ! is_array( $widgets ) ) {
+				continue;
+			}
+
+			foreach ( $widgets as $index => $widget_id ) {
+				if ( 'bd_divisional_maps' === $widget_id ) {
+					$sidebars_widgets[ $sidebar_id ][ $index ] = $new_widget_id;
+				}
+			}
+		}
+
+		update_option( 'sidebars_widgets', $sidebars_widgets );
+		update_option( self::MIGRATION_OPTION, 1 );
+	}
+
+	/**
+	 * Recover a missing widget instance after legacy cleanup.
+	 *
+	 * If a site updated from the legacy single-widget API and WordPress already
+	 * removed the old sidebar entry before migration could run, this ensures at
+	 * least one instance appears in "Inactive Widgets".
+	 *
+	 * @return void
+	 */
+	public static function maybe_recover_missing_widget() {
+		if ( get_option( self::RECOVERY_OPTION ) ) {
+			return;
+		}
+
+		$sidebars_widgets = get_option( 'sidebars_widgets', array() );
+		if ( ! is_array( $sidebars_widgets ) ) {
+			return;
+		}
+
+		$has_widget_in_sidebars = false;
+		foreach ( $sidebars_widgets as $widgets ) {
+			if ( ! is_array( $widgets ) ) {
+				continue;
+			}
+
+			foreach ( $widgets as $widget_id ) {
+				if ( 0 === strpos( (string) $widget_id, 'bd_divisional_maps-' ) ) {
+					$has_widget_in_sidebars = true;
+					break 2;
+				}
+			}
+		}
+
+		if ( $has_widget_in_sidebars ) {
+			update_option( self::RECOVERY_OPTION, 1 );
+			return;
+		}
+
+		$widget_instances = get_option( 'widget_bd_divisional_maps', array() );
+		if ( ! is_array( $widget_instances ) ) {
+			$widget_instances = array();
+		}
+
+		$existing_instance_ids = array();
+		foreach ( array_keys( $widget_instances ) as $key ) {
+			if ( is_int( $key ) ) {
+				$existing_instance_ids[] = $key;
+			}
+		}
+
+		if ( empty( $existing_instance_ids ) ) {
+			$next_index = 2;
+			$options = self::get_options();
+			$widget_instances[ $next_index ] = $options;
+			$widget_instances['_multiwidget'] = 1;
+			update_option( 'widget_bd_divisional_maps', $widget_instances );
+			$instance_id = $next_index;
+		} else {
+			$instance_id = (int) min( $existing_instance_ids );
+		}
+
+		if ( ! isset( $sidebars_widgets['wp_inactive_widgets'] ) || ! is_array( $sidebars_widgets['wp_inactive_widgets'] ) ) {
+			$sidebars_widgets['wp_inactive_widgets'] = array();
+		}
+
+		$widget_id = 'bd_divisional_maps-' . $instance_id;
+		if ( ! in_array( $widget_id, $sidebars_widgets['wp_inactive_widgets'], true ) ) {
+			$sidebars_widgets['wp_inactive_widgets'][] = $widget_id;
+			update_option( 'sidebars_widgets', $sidebars_widgets );
+		}
+
+		update_option( self::RECOVERY_OPTION, 1 );
+	}
+
 
 	public static function init() {
 		add_shortcode( 'interactive_divitional_maps_bd', array( __CLASS__, 'render_shortcode' ) ); // backward compatibility
 		add_shortcode( 'interactive_divisional_maps_bd', array( __CLASS__, 'render_shortcode' ) );
+		add_action( 'init', array( __CLASS__, 'maybe_migrate_legacy_widget' ), 1 );
+		add_action( 'init', array( __CLASS__, 'maybe_recover_missing_widget' ), 2 );
 		add_action( 'widgets_init', array( __CLASS__, 'register_widget' ) );
 	}
 }
