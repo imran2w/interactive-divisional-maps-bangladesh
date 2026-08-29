@@ -3,7 +3,7 @@ Contributors: imran2w
 Developer link: https://imran.link
 Tags: Bangladesh, Maps
 Requires at least: 4.0
-Tested up to: 7.0
+Tested up to: 7.1
 Stable tag: 2.0.0
 Requires PHP: 5.6
 License: GPLv2 or later

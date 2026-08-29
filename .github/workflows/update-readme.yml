@@ -1,0 +1,40 @@
+name: Update Readme on WordPress.org
+
+on:
+  push:
+    branches: [ "main" ] # master or main, depending on your default branch
+    paths:
+      - 'readme.txt'
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install SVN
+        run: sudo apt-get install -y subversion
+
+      - name: Commit readme.txt to WordPress.org SVN (Trunk + Tag)
+        run: |
+          # Checkout trunk
+          svn checkout --depth empty https://plugins.svn.wordpress.org/interactive-divisional-maps-bangladesh/trunk svn-trunk
+          cd svn-trunk
+          svn update readme.txt
+          cp ../readme.txt readme.txt
+          svn commit -m "Update readme.txt in trunk" --username "${{ secrets.SVN_USERNAME }}" --password "${{ secrets.SVN_PASSWORD }}" --non-interactive
+          cd ..
+
+          # Get Stable tag version from readme.txt
+          # Trim both trailing spaces and carriage return (\r) characters
+          STABLE_TAG=$(grep -i "^Stable tag:" readme.txt | awk '{print $NF}' | tr -d '\r')
+
+          # If stable tag exists and isn't trunk, update tag readme too
+          if [ -n "$STABLE_TAG" ] && [ "$STABLE_TAG" != "trunk" ]; then
+            svn checkout --depth empty https://plugins.svn.wordpress.org/interactive-divisional-maps-bangladesh/tags/$STABLE_TAG svn-tag
+            cd svn-tag
+            svn update readme.txt
+            cp ../readme.txt readme.txt
+            svn commit -m "Update readme.txt in tag $STABLE_TAG" --username "${{ secrets.SVN_USERNAME }}" --password "${{ secrets.SVN_PASSWORD }}" --non-interactive
+          fi
